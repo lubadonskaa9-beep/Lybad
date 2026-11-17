@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LybaD</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20256%20256%22%20width%3D%22256%22%20height%3D%22256%22%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%22fg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%237C3AED%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2306B6D4%22/%3E%3C/linearGradient%3E%3C/defs%3E%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2256%22%20fill%3D%22%230F1117%22/%3E%20%3Cg%20transform%3D%22translate%2824%2C8%29%20scale%281.05%29%22%3E%20%3Cpath%20d%3D%22M40%2030H100A70%2070%200%200%201%20100%20170H66L30%20198L40%20164Z%22%20fill%3D%22url%28%23fg%29%22/%3E%20%3Cpath%20d%3D%22M92%2062Q96%2096%20130%20100Q96%20104%2092%20138Q88%20104%2054%20100Q88%2096%2092%2062Z%22%20fill%3D%22%230F1117%22/%3E%20%3Ccircle%20cx%3D%22142%22%20cy%3D%2264%22%20r%3D%226%22%20fill%3D%22%23fff%22%20opacity%3D%22.9%22/%3E%20%3C/g%3E%3C/svg%3E">
+<meta name="theme-color" content="#0F1117">
+<style>
+:root{--bg:#0F1117;--card:#1A1D27;--user:#2B2F42;--pri:#7C3AED;--pri2:#8B5CF6;--acc:#06B6D4;--tx:#F3F4F6;--tx2:#9CA3AF}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{display:flex;flex-direction:column;height:100%;max-width:720px;margin:0 auto}
+header{padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));border-bottom:1px solid #23273a}
+.hd{display:flex;align-items:center;gap:10px}.hd svg{filter:drop-shadow(0 0 6px #7C3AED) drop-shadow(0 0 10px #06B6D4)}
+.logo{font-size:26px;font-weight:800;letter-spacing:1px;color:#e9ddff;text-shadow:0 0 8px #7C3AED,0 0 18px #7C3AED,0 0 26px #06B6D4}
+#view{flex:1;overflow-y:auto;padding:14px 14px 20px}
+nav{display:flex;background:var(--card);border-top:1px solid #23273a;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--tx2);padding:10px 0 8px;font-size:12px;cursor:pointer;border-top:3px solid transparent}
+nav button span{display:block;font-size:22px}
+nav button.on{color:var(--acc);border-top-color:var(--acc)}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid transparent}
+.card.act{border-color:var(--acc)}
+details.card summary{font-weight:700;font-size:17px;cursor:pointer;color:var(--acc);list-style:none}
+details.card[open] summary{margin-bottom:10px}
+h2{margin:6px 0 12px;font-size:20px}
+label{display:block;font-size:13px;color:var(--tx2);margin:10px 0 4px}
+input,textarea,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid #2f3448;border-radius:10px;padding:12px;font:inherit}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--acc)}
+textarea{resize:vertical;min-height:90px}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:12px;padding:13px 18px;font:600 16px inherit;cursor:pointer;min-height:48px}
+.btn:hover,.btn:active{background:var(--pri2)}
+.btn.sec{background:var(--user)}.btn.sec:hover{background:#363b54}
+.btn.red{background:#b3261e}
+.btn.w{width:100%;margin-top:10px}
+.row{display:flex;gap:8px;align-items:center}
+.row>.btn{flex:1}
+.av{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--user);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:var(--acc);flex:none;border:2px solid var(--acc)}
+.item{display:flex;gap:12px;align-items:center}
+.item .inf{flex:1;min-width:0}
+.item .nm{font-weight:700}
+.sm{font-size:13px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{background:var(--user);border:0;border-radius:10px;color:var(--tx);width:44px;height:44px;font-size:18px;cursor:pointer;flex:none}
+.cnt{text-align:right;font-size:12px;color:var(--tx2)}
+.badge{color:var(--acc);font-size:12px;font-weight:700}
+.empty{text-align:center;color:var(--tx2);padding:30px 10px}
+#chat{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:20;max-width:720px;margin:0 auto}
+#chat.open{display:flex}
+.wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:25vw;font-weight:900;opacity:.04;pointer-events:none;z-index:0;user-select:none}
+@media(min-width:720px){.wm{font-size:180px}}
+.ch{display:flex;align-items:center;gap:8px;padding:8px 10px;padding-top:max(8px,env(safe-area-inset-top));background:var(--card);z-index:2}
+.ch .av{width:40px;height:40px;font-size:16px}
+.ch .t{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#msgs{flex:1;overflow-y:auto;padding:12px;z-index:1;position:relative}
+.m{max-width:88%;margin-bottom:12px;padding:10px 14px;border-radius:16px;word-wrap:break-word;overflow-wrap:anywhere}
+.m.b{background:var(--card);border-bottom-left-radius:4px}
+.m.u{background:var(--user);margin-left:auto;border-bottom-right-radius:4px}
+.act-t,i.act{font-style:italic;color:var(--tx2)}
+.acts{display:flex;gap:4px;margin-top:6px;opacity:.85}
+.acts button{background:none;border:0;font-size:16px;padding:6px 8px;border-radius:8px;cursor:pointer;filter:grayscale(.6)}
+.acts button.on{filter:none;background:#7c3aed44}
+.inp{display:flex;gap:8px;padding:8px 10px;padding-bottom:max(8px,env(safe-area-inset-bottom));background:var(--card);z-index:2;align-items:flex-end}
+.inp textarea{min-height:46px;max-height:140px;resize:none;flex:1}
+.inp .btn{padding:0 18px}
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:50}
+#modal.open{display:flex}
+.mb{background:var(--card);width:100%;max-width:720px;max-height:88%;overflow-y:auto;border-radius:18px 18px 0 0;padding:16px}
+.mb h3{margin:0 0 10px}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#b3261e;color:#fff;padding:10px 16px;border-radius:12px;z-index:99;display:none;max-width:90%;font-size:14px}
+</style></head>
+<body>
+<div id="app"><header class="hd"><svg viewBox="22 24 156 180" width="32" height="37" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#06B6D4"/></linearGradient></defs><path d="M40 30H100A70 70 0 0 1 100 170H66L30 198L40 164Z" fill="url(#hg)"/><path d="M92 62Q96 96 130 100Q96 104 92 138Q88 104 54 100Q88 96 92 62Z" fill="#0F1117"/><circle cx="142" cy="64" r="6" fill="#fff" opacity=".9"/></svg><span class="logo">LybaD</span></header><div id="view"></div>
+<nav id="nav"></nav></div>
+<div id="chat"><div class="wm">LybaD</div>
+<div class="ch"><button class="ib" id="cb">←</button><div id="cav"></div><div class="t" id="ct"></div><button class="ib" id="cm" title="Память" style="width:auto;padding:0 12px;font-size:14px">📌 Память</button><button class="ib" id="cc" title="Очистить">🧹</button></div>
+<div id="msgs"></div>
+<div class="inp"><textarea id="ti" rows="1" placeholder="Ваше сообщение..."></textarea><button class="btn" id="sb">➤</button></div></div>
+<div id="modal"><div class="mb" id="mb"></div></div><div id="toast"></div>
+<script>
+const K='lybad_v1';
+const MODELS=['google/gemma-3-27b-it:free','meta-llama/llama-3.3-70b-instruct:free','mistralai/mistral-small-3.1-24b-instruct:free'];
+function load(){try{const d=JSON.parse(localStorage.getItem(K));if(d&&d.chars)return d}catch(e){}return{set:{key:'',model:MODELS[0],custom:''},chars:[],personas:[],pid:null,chats:{}}}
+let S=load();
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('Не удалось сохранить: хранилище переполнено')}}
+const $=s=>document.querySelector(s);
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const fmt=t=>esc(t).replace(/\*([^*]+)\*/g,'<i class="act">*$1*</i>').replace(/\n/g,'<br>');
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',3500)}
+function av(src,name,cls){return src?`<img class="av ${cls||''}" src="${esc(src)}" alt="">`:`<div class="av ${cls||''}">${esc((name||'?')[0].toUpperCase())}</div>`}
+function modal(html){$('#mb').innerHTML=html;$('#modal').classList.add('open')}
+function closeModal(){$('#modal').classList.remove('open')}
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+let askFn=null;
+function ask(text,fn){askFn=fn;modal(`<h3>${esc(text)}</h3><div class="row"><button class="btn sec" onclick="closeModal()">Отмена</button><button class="btn red" onclick="closeModal();askFn()">Да</button></div>`)}
+function readImg(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,256/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.max(1,im.width*s);cv.height=Math.max(1,im.height*s);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);cb(cv.toDataURL('image/jpeg',.85))};im.onerror=()=>cb(r.result);im.src=r.result};r.readAsDataURL(file)}
+
+/* ---------- навигация ---------- */
+const TABS=[['chats','💬','Чаты'],['create','➕','Создать'],['profile','👤','Профиль'],['settings','⚙️','Настройки']];
+let tab='chats',EC=null,EP=null,AV='',PAV='';
+function go(t){tab=t;render()}
+function render(){
+ $('#nav').innerHTML=TABS.map(([k,i,l])=>`<button class="${tab===k?'on':''}" onclick="go('${k}')"><span>${i}</span>${l}</button>`).join('');
+ $('#view').innerHTML={chats:vChats,create:vCreate,profile:vProfile,settings:vSettings}[tab]();
+ $('#view').scrollTop=0}
+
+/* ---------- чаты ---------- */
+function vChats(){
+ if(!S.chars.length)return `<div class="empty">Персонажей пока нет.<br>Создайте первого!<button class="btn w" onclick="EC=null;AV='';go('create')">➕ Создать персонажа</button></div>`;
+ return `<h2>Персонажи и диалоги</h2>`+S.chars.map(c=>{const ch=S.chats[c.id],l=ch&&ch.msgs.length?ch.msgs[ch.msgs.length-1].content.replace(/\*/g,''):(c.greet||'Новый диалог');
+ return `<div class="card"><div class="item" onclick="openChat('${c.id}')" style="cursor:pointer">${av(c.ava,c.name)}<div class="inf"><div class="nm">${esc(c.name)}</div><div class="sm">${esc(l)}</div></div></div>
+ <div class="row" style="margin-top:10px"><button class="btn" onclick="openChat('${c.id}')">💬 Чат</button><button class="ib" onclick="editChar('${c.id}')">✏️</button><button class="ib" onclick="delChar('${c.id}')">🗑️</button></div></div>`}).join('')}
+function editChar(id){EC=S.chars.find(c=>c.id===id);AV=EC.ava||'';go('create')}
+function delChar(id){ask('Удалить персонажа и весь его чат?',()=>{S.chars=S.chars.filter(c=>c.id!==id);delete S.chats[id];save();render()})}
+
+/* ---------- конструктор ---------- */
+function vCreate(){const c=EC||{};
+ const ta=(id,l,v,ph)=>`<label>${l}</label><textarea id="${id}" placeholder="${ph}">${esc(v)}</textarea>`;
+ return `<h2>${EC?'Редактировать':'Новый'} персонаж</h2>
+ <details class="card" open><summary>🧑 Основная инфа</summary>
+ <label>Имя бота</label><input id="c_name" value="${esc(c.name)}">
+ <label>Аватарка (ссылка)</label><input id="c_ava" value="${AV.startsWith('data:')?'':esc(AV)}" oninput="AV=this.value;pv('#c_pv',AV,'?')" placeholder="https://...">
+ <div class="row" style="margin-top:8px"><div id="c_pv">${av(AV,c.name)}</div><label class="btn sec" style="margin:0;text-align:center;color:var(--tx)">📁 Загрузить с телефона<input type="file" accept="image/*" hidden onchange="upl(this,v=>{AV=v;pv('#c_pv',v,'?')})"></label></div>
+ ${ta('c_greet','Приветственное сообщение',c.greet,'*Она входит в комнату.* — Привет!')}</details>
+ <details class="card" open><summary>👁 Внешний вид</summary>${ta('c_look','Внешность, одежда, детали',c.look,'Рост, волосы, глаза, одежда...')}</details>
+ <details class="card" open><summary>🎭 Характер</summary>${ta('c_char','Манера речи, темперамент, привычки',c.char,'Спокойный, саркастичный...')}</details>
+ <details class="card" open><summary>💞 Отношение</summary>${ta('c_rel','Отношение к Персоне пользователя, статус отношений',c.rel,'Незнакомцы / друзья / ...')}</details>
+ <details class="card" open><summary>📖 Лорбук</summary>${ta('c_lore','Мир, правила вселенной, важные события',c.lore,'Описание мира...')}</details>
+ <button class="btn w" onclick="saveChar()">💾 Сохранить</button>
+ ${EC?'<button class="btn sec w" onclick="EC=null;AV=\'\';go(\'chats\')">Отмена</button>':''}`}
+function pv(sel,src,n){$(sel).innerHTML=av(src,n)}
+function upl(inp,cb){if(inp.files[0])readImg(inp.files[0],cb)}
+function saveChar(){const name=$('#c_name').value.trim();if(!name)return toast('Введите имя бота');
+ const d={name,ava:AV.trim(),greet:$('#c_greet').value,look:$('#c_look').value,char:$('#c_char').value,rel:$('#c_rel').value,lore:$('#c_lore').value};
+ if(EC)Object.assign(EC,d);else S.chars.push({id:uid(),...d});
+ EC=null;AV='';save();go('chats')}
+
+/* ---------- профиль ---------- */
+function vProfile(){const p=EP||{};
+ return `<h2>Мои Персоны</h2>`+(S.personas.length?S.personas.map(x=>`<div class="card ${S.pid===x.id?'act':''}"><div class="item">${av(x.ava,x.name)}<div class="inf"><div class="nm">${esc(x.name)} ${S.pid===x.id?'<span class="badge">● АКТИВНА</span>':''}</div><div class="sm">${esc(x.desc)}</div></div></div>
+ <div class="row" style="margin-top:10px">${S.pid===x.id?'':`<button class="btn" onclick="S.pid='${x.id}';save();render()">Выбрать</button>`}<button class="ib" onclick="EP=S.personas.find(z=>z.id=='${x.id}');PAV=EP.ava||'';render();scrollTo2()">✏️</button><button class="ib" onclick="delP('${x.id}')">🗑️</button></div></div>`).join(''):'<div class="empty">Персон пока нет</div>')+
+ `<div class="card" id="pform"><h2 style="margin-top:0">${EP?'Редактировать':'Новая'} Персона</h2>
+ <label>Имя персоны</label><input id="p_name" value="${esc(p.name)}">
+ <label>Аватарка (ссылка)</label><input value="${PAV.startsWith('data:')?'':esc(PAV)}" oninput="PAV=this.value;pv('#p_pv',PAV,'?')" placeholder="https://...">
+ <div class="row" style="margin-top:8px"><div id="p_pv">${av(PAV,p.name)}</div><label class="btn sec" style="margin:0;text-align:center;color:var(--tx)">📁 Загрузить файл<input type="file" accept="image/*" hidden onchange="upl(this,v=>{PAV=v;pv('#p_pv',v,'?')})"></label></div>
+ <label>Внешность и характер</label><textarea id="p_desc" maxlength="2000" style="min-height:160px" oninput="$('#p_cnt').textContent=this.value.length+' / 2000'">${esc(p.desc)}</textarea><div class="cnt" id="p_cnt">${(p.desc||'').length} / 2000</div>
+ <button class="btn w" onclick="saveP()">💾 Сохранить</button>${EP?'<button class="btn sec w" onclick="EP=null;PAV=\'\';render()">Отмена</button>':''}</div>`}
+function scrollTo2(){setTimeout(()=>$('#pform').scrollIntoView({behavior:'smooth'}),50)}
+function saveP(){const name=$('#p_name').value.trim();if(!name)return toast('Введите имя персоны');
+ const d={name,ava:PAV.trim(),desc:$('#p_desc').value.slice(0,2000)};
+ if(EP)Object.assign(EP,d);else{const n={id:uid(),...d};S.personas.push(n);if(!S.pid)S.pid=n.id}
+ EP=null;PAV='';save();render()}
+function delP(id){ask('Удалить Персону?',()=>{S.personas=S.personas.filter(x=>x.id!==id);if(S.pid===id)S.pid=S.personas[0]?S.personas[0].id:null;save();render()})}
+
+/* ---------- настройки ---------- */
+function vSettings(){const s=S.set;
+ return `<h2>Настройки</h2><div class="card"><label>API-ключ OpenRouter (<a href="https://openrouter.ai/keys" target="_blank" style="color:var(--acc)">получить</a>)</label>
+ <input id="s_key" type="password" value="${esc(s.key)}" placeholder="sk-or-v1-..." autocomplete="off">
+ <label>Модель</label><select id="s_model">${MODELS.map(m=>`<option ${s.model===m?'selected':''}>${m}</option>`).join('')}</select>
+ <label>Или своя модель (приоритетнее списка)</label><input id="s_custom" value="${esc(s.custom)}" placeholder="например, deepseek/deepseek-chat-v3-0324:free">
+ <button class="btn w" onclick="saveSet()">💾 Сохранить</button></div>
+ <div class="card"><h3 style="margin-top:0">Данные</h3><button class="btn sec w" onclick="exp()">⬇️ Скачать резервную копию (JSON)</button>
+ <label class="btn sec w" style="display:block;text-align:center;color:var(--tx)">⬆️ Восстановить из файла<input type="file" accept=".json,application/json" hidden onchange="imp(this)"></label></div>`}
+function saveSet(){S.set={key:$('#s_key').value.trim(),model:$('#s_model').value,custom:$('#s_custom').value.trim()};save();toast2('Сохранено ✓')}
+function toast2(t){const e=$('#toast');e.style.background='#15803d';toast(t);setTimeout(()=>e.style.background='',3600)}
+function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='lybad-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()}
+function imp(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.chars||!d.chats||!d.personas)throw 0;ask('Заменить все текущие данные данными из файла?',()=>{S=d;S.set=S.set||{key:'',model:MODELS[0],custom:''};save();render();toast2('Данные восстановлены ✓')})}catch(e){toast('Файл не похож на резервную копию LybaD')}};r.readAsText(f);inp.value=''}
+
+/* ---------- чат ---------- */
+let CID=null,busy=false,ctrl=null;
+const cur=()=>S.chars.find(c=>c.id===CID);
+const pers=()=>S.personas.find(p=>p.id===S.pid);
+function openChat(id){CID=id;const c=cur();if(!S.chats[id])S.chats[id]={msgs:[],mem:[]};const ch=S.chats[id];
+ if(!ch.msgs.length&&c.greet)ch.msgs.push({id:uid(),role:'assistant',content:c.greet});save();
+ $('#cav').innerHTML=av(c.ava,c.name);$('#ct').textContent=c.name;$('#chat').classList.add('open');renderChat()}
+$('#cb').onclick=()=>{if(ctrl)ctrl.abort();$('#chat').classList.remove('open');CID=null;render()};
+function scrollDown(){const m=$('#msgs');m.scrollTop=m.scrollHeight}
+function renderChat(){const ch=S.chats[CID],last=ch.msgs.length-1;
+ $('#msgs').innerHTML=ch.msgs.map((m,i)=>{const pin=ch.mem.some(x=>x.src===m.id);
+ return `<div class="m ${m.role==='user'?'u':'b'}" data-id="${m.id}"><div class="txt">${fmt(m.content)||'…'}</div><div class="acts"><button data-a="pin" class="${pin?'on':''}">📌</button><button data-a="edit">✏️</button><button data-a="del">🗑️</button>${i===last&&m.role==='assistant'&&i>0?'<button data-a="regen">🔄</button>':''}</div></div>`}).join('');
+ $('#sb').textContent=busy?'■':'➤';scrollDown()}
+function upd(m){const e=document.querySelector(`.m[data-id="${m.id}"] .txt`);if(e){e.innerHTML=fmt(m.content);scrollDown()}}
+$('#msgs').addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const ch=S.chats[CID],id=b.closest('.m').dataset.id,m=ch.msgs.find(x=>x.id===id);if(!m||busy)return;
+ const a=b.dataset.a;
+ if(a==='pin'){const i=ch.mem.findIndex(x=>x.src===id);if(i>=0)ch.mem.splice(i,1);else ch.mem.push({id:uid(),text:m.content,src:id});save();renderChat();toast2(i>=0?'Откреплено':'Закреплено в Памяти сюжета 📌')}
+ else if(a==='del'){ask('Удалить сообщение?',()=>{ch.msgs=ch.msgs.filter(x=>x.id!==id);save();renderChat()})}
+ else if(a==='edit'){modal(`<h3>Редактировать сообщение</h3><textarea id="ed" style="min-height:160px">${esc(m.content)}</textarea><div class="row" style="margin-top:10px"><button class="btn sec" onclick="closeModal()">Отмена</button><button class="btn" onclick="saveEd('${id}')">Сохранить</button></div>`)}
+ else if(a==='regen'){ch.msgs.pop();save();gen()}});
+function saveEd(id){const ch=S.chats[CID],m=ch.msgs.find(x=>x.id===id),v=$('#ed').value;if(m){m.content=v;const p=ch.mem.find(x=>x.src===id);if(p)p.text=v}save();closeModal();renderChat()}
+$('#cc').onclick=()=>ask('Очистить историю чата? (Закреплённая память сохранится)',()=>{const c=cur();S.chats[CID].msgs=c.greet?[{id:uid(),role:'assistant',content:c.greet}]:[];save();renderChat()});
+function sys(c){const p=pers(),ch=S.chats[c.id];
+ let s=`Ты играешь роль персонажа «${c.name}» в ролевой игре с пользователем. Пиши только от лица персонажа. Действия и мысли — в *звёздочках*, прямая речь — обычным текстом. Не выходи из роли и не пиши реплики за пользователя.\n\n`;
+ [['Внешний вид',c.look],['Характер',c.char],['Отношение к Персоне пользователя',c.rel],['Лорбук (мир и правила)',c.lore]].forEach(([t,v])=>{if(v&&v.trim())s+=`## ${t}\n${v}\n\n`});
+ if(p)s+=`## Персона пользователя: ${p.name}\n${(p.desc||'').slice(0,2000)}\n\n`;
+ if(ch.mem.length)s+='## Память сюжета (важные факты, помни их всегда)\n'+ch.mem.map(m=>'- '+m.text).join('\n');
+ return s.replace(/\{\{char\}\}/gi,c.name).replace(/\{\{user\}\}/gi,p?p.name:'Пользователь')}
+async function api(messages,onTok,signal){
+ if(!S.set.key)throw new Error('Вставьте API-ключ во вкладке «Настройки»');
+ const model=S.set.custom||S.set.model;
+ const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',signal,headers:{'Authorization':'Bearer '+S.set.key,'Content-Type':'application/json','HTTP-Referer':location.protocol.startsWith('http')?location.origin:'https://lybad.app','X-Title':'LybaD'},body:JSON.stringify({model,messages,stream:!!onTok})});
+ if(!r.ok){let t='';try{t=(await r.json()).error.message}catch(e){}throw new Error('Ошибка '+r.status+(t?': '+t:''))}
+ if(!onTok){const j=await r.json();return j.choices[0].message.content}
+ const rd=r.body.getReader(),dec=new TextDecoder();let buf='',full='';
+ while(true){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
+ for(const l of ls){if(!l.startsWith('data:'))continue;const d=l.slice(5).trim();if(d==='[DONE]')continue;try{const t=JSON.parse(d).choices[0].delta.content;if(t){full+=t;onTok(full)}}catch(e){}}}
+ return full}
+async function gen(){
+ if(busy)return;const c=cur(),ch=S.chats[CID];busy=true;
+ const msg={id:uid(),role:'assistant',content:''};ch.msgs.push(msg);renderChat();
+ const hist=ch.msgs.slice(0,-1).slice(-60).map(m=>({role:m.role,content:m.content}));
+ ctrl=new AbortController();
+ try{await api([{role:'system',content:sys(c)},...hist],t=>{msg.content=t;upd(msg)},ctrl.signal)}
+ catch(e){if(e.name!=='AbortError')toast(e.message)}
+ if(!msg.content.trim())ch.msgs=ch.msgs.filter(m=>m!==msg);
+ busy=false;ctrl=null;save();if(CID)renderChat()}
+function send(){if(busy){if(ctrl)ctrl.abort();return}
+ const t=$('#ti').value.trim();if(!t)return;
+ S.chats[CID].msgs.push({id:uid(),role:'user',content:t});$('#ti').value='';$('#ti').style.height='';save();gen()}
+$('#sb').onclick=send;
+$('#ti').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px'});
+$('#ti').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(pointer:fine)').matches){e.preventDefault();send()}});
+
+/* ---------- память сюжета ---------- */
+$('#cm').onclick=memModal;
+function memModal(){const ch=S.chats[CID];
+ modal(`<h3>📌 Память сюжета</h3><div class="sm" style="white-space:normal;margin-bottom:8px">Всё это отправляется нейросети в каждом запросе.</div>
+ ${ch.mem.length?ch.mem.map((m,i)=>`<div class="card" style="padding:10px"><textarea data-i="${i}" style="min-height:70px" onchange="S.chats[CID].mem[+this.dataset.i].text=this.value;save()">${esc(m.text)}</textarea><button class="btn sec" style="margin-top:6px;min-height:40px;padding:8px 14px" onclick="memDel(${i})">🗑️ Удалить</button></div>`).join(''):'<div class="empty">Пока пусто. Нажимайте 📌 на сообщениях.</div>'}
+ <label>Добавить свою заметку</label><textarea id="mn" style="min-height:70px" placeholder="Например: Они встретились в 2019 году..."></textarea>
+ <button class="btn w" onclick="memAdd()">➕ Добавить заметку</button>
+ <button class="btn sec w" id="sumb" onclick="summ()">🗜 Сжать старую историю (Авто-пересказ)</button>
+ <button class="btn sec w" onclick="closeModal()">Закрыть</button>`)}
+function memDel(i){S.chats[CID].mem.splice(i,1);save();memModal();renderChat()}
+function memAdd(){const v=$('#mn').value.trim();if(!v)return;S.chats[CID].mem.push({id:uid(),text:v});save();memModal()}
+async function summ(){const c=cur(),ch=S.chats[CID],p=pers();
+ const t=ch.msgs.slice(-60).map(m=>(m.role==='user'?(p?p.name:'Пользователь'):c.name)+': '+m.content).join('\n');
+ if(!t)return toast('В чате пока нет сообщений');
+ const b=$('#sumb');b.textContent='⏳ Пересказываю...';b.disabled=true;
+ try{const r=await api([{role:'system',content:'Ты внимательный редактор, который кратко пересказывает сюжет ролевой игры.'},{role:'user',content:'Кратко перескажи ключевые события этого диалога в 5-7 пунктах (каждый пункт с новой строки, начиная с "- "). Только пересказ, без вступлений.\n\n'+t}]);
+ ch.mem.push({id:uid(),text:'Авто-пересказ:\n'+r.trim()});save();memModal();toast2('Пересказ сохранён в память ✓')}
+ catch(e){toast(e.message);b.textContent='🗜 Сжать старую историю (Авто-пересказ)';b.disabled=false}}
+
+render();
+</script></body></html>

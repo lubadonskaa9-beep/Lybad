@@ -83,7 +83,7 @@ const URLS={polza:'https://polza.ai/api/v1/chat/completions',or:'https://openrou
 let fcat='Все',fq='',tab='home',BT='my',PT='author',AAV=null,EC=null,EP=null,AV='',PAV='',CID=null,busy=false,ctrl=null,askFn=null;
 function load(){try{const d=JSON.parse(localStorage.getItem(K));if(d&&d.chars)return d}catch(e){}return{set:{},chars:[],personas:[],pid:null,chats:{}}}
 let S=load();
-function norm(){S.set=S.set||{};const s=S.set;s.key=s.key||'';s.custom=s.custom||'';if(s.post===undefined)s.post=true;if(s.pre===undefined)s.pre=false;s.pi=s.pi||'';if(s.v2!==2){s.v2=2;s.pre=false;s.pi=''}if(!s.prov){s.prov=(s.key&&!s.key.startsWith('pza_'))?'or':'polza'}if(!s.model||(s.prov==='polza'&&s.model.includes(':free')))s.model=PM[s.prov][0];S.chars=S.chars||[];S.personas=S.personas||[];S.chats=S.chats||{};S.author=S.author||{name:'',bio:'',ava:''}}
+function norm(){S.set=S.set||{};const s=S.set;s.key=s.key||'';s.custom=s.custom||'';if(s.post===undefined)s.post=true;if(s.pre===undefined)s.pre=false;s.pi=s.pi||'';if(s.v2!==2){s.v2=2;s.pre=false;s.pi=''}if(s.temp===undefined)s.temp=0.7;if(s.fp===undefined)s.fp=0;if(!s.prov){s.prov=(s.key&&!s.key.startsWith('pza_'))?'or':'polza'}if(!s.model||(s.prov==='polza'&&s.model.includes(':free')))s.model=PM[s.prov][0];S.chars=S.chars||[];S.personas=S.personas||[];S.chats=S.chats||{};S.author=S.author||{name:'',bio:'',ava:''}}
 norm();
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('Хранилище переполнено, сделайте резервную копию')}}
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -202,11 +202,13 @@ function vSettings(){const s=S.set;
  <label style="display:flex;gap:10px;align-items:center;color:var(--tx);margin-top:14px"><input type="checkbox" id="s_post" ${s.post?'checked':''} style="width:auto"> Инструкция в конце последнего сообщения (бот действует первым)</label>
  <label style="display:flex;gap:10px;align-items:center;color:var(--tx)"><input type="checkbox" id="s_pre" ${s.pre?'checked':''} style="width:auto"> Префилл: ответ начинается с «*» (выключи, если API ругается)</label>
  <label>Текст инструкции (пусто = стандартная; можно {{char}} и {{user}})</label><textarea id="s_pi" style="min-height:120px" placeholder="${esc(PI_DEF)}">${esc(s.pi)}</textarea>
+ <label>Температура (0.5–1.0, ниже = грамотнее и послушнее; по умолчанию 0.7)</label><input id="s_temp" type="number" step="0.05" min="0.3" max="1.2" value="${s.temp}">
+ <label>Штраф за повторы (0 = выкл; выше 0.3 ломает русский язык)</label><input id="s_fp" type="number" step="0.1" min="0" max="1" value="${s.fp}">
  <button class="btn w" onclick="saveSet()">💾 Сохранить</button></div>
  <div class="card"><h3 style="margin-top:0">Данные</h3><button class="btn sec w" onclick="exp()">⬇️ Скачать резервную копию (JSON)</button>
  <label class="btn sec w">⬆️ Восстановить из файла<input type="file" accept=".json,application/json" hidden onchange="imp(this)"></label></div>`}
 function provCh(){$('#s_model').innerHTML=PM[$('#s_prov').value].map(m=>`<option>${m}</option>`).join('')}
-function saveSet(){S.set={key:$('#s_key').value.trim(),prov:$('#s_prov').value,model:$('#s_model').value,custom:$('#s_custom').value.trim(),post:$('#s_post').checked,pre:$('#s_pre').checked,pi:$('#s_pi').value.trim(),v2:2};save();render();toast('Сохранено ✓',1)}
+function saveSet(){S.set={key:$('#s_key').value.trim(),prov:$('#s_prov').value,model:$('#s_model').value,custom:$('#s_custom').value.trim(),post:$('#s_post').checked,pre:$('#s_pre').checked,pi:$('#s_pi').value.trim(),v2:2,temp:parseFloat($('#s_temp').value)||0.7,fp:Math.max(0,parseFloat($('#s_fp').value)||0)};save();render();toast('Сохранено ✓',1)}
 function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='lybad-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()}
 function imp(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.chars||!d.chats||!d.personas)throw 0;ask('Заменить все текущие данные данными из файла?',()=>{S=d;norm();save();render();toast('Данные восстановлены ✓',1)})}catch(e){toast('Файл не похож на резервную копию LybaD')}};r.readAsText(f);inp.value=''}
 
@@ -243,6 +245,8 @@ const ENGINE=`Ты {{char}} в откровенной взрослой dark roma
 Не пиши за {{user}} ни слов, ни действий, ни мыслей, ни чувств. Только {{char}} и мир вокруг.
 Не заканчивай ответ вопросом или просьбой о разрешении: заканчивай действием, утверждением или приказом.
 
+Пиши простым, грамотным литературным русским языком, короткими ясными фразами, без калек с английского. Описывай только {{char}} и то, что видно снаружи; не пересказывай чувства других персонажей.
+
 Формат: действия и мысли в *звёздочках*, речь обычным текстом. ОТВЕЧАЙ ТОЛЬКО НА РУССКОМ ЯЗЫКЕ, 2-4 абзаца, живо, без штампов.`;
 function sys(c){const p=pers(),ch=S.chats[c.id];
  let s=ENGINE+'\n\n';
@@ -255,7 +259,7 @@ async function api(messages,onTok,signal,opt){
  if(!S.set.key)throw new Error('Вставьте API-ключ во вкладке «Настройки»');
  const pz=S.set.prov==='polza',hd={'Authorization':'Bearer '+S.set.key,'Content-Type':'application/json'};
  if(!pz){hd['HTTP-Referer']=location.protocol.startsWith('http')?location.origin:'https://lybad.app';hd['X-Title']='LybaD'}
- const bd={model:S.set.custom||S.set.model,messages,stream:!!onTok,temperature:0.9,frequency_penalty:0.3,...(opt||{})},
+ const bd={model:S.set.custom||S.set.model,messages,stream:!!onTok,temperature:S.set.temp||0.7,...(S.set.fp>0?{frequency_penalty:S.set.fp}:{}),...(opt||{})},
  post=b=>fetch(URLS[S.set.prov],{method:'POST',signal,headers:hd,body:JSON.stringify(b)});
  let r=await post(bd);
  if(r.status===400&&bd.frequency_penalty){const b2={...bd};delete b2.frequency_penalty;r=await post(b2)}

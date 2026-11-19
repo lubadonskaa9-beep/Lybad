@@ -101,7 +101,7 @@ const pv=(sel,src)=>{$(sel).innerHTML=av(src,'?')};
 
 /* навигация */
 const TABS=[['home','🏠','Главная'],['chats','💬','Чаты'],['my','🎭','Персонажи'],['profile','👤','Профиль'],['settings','⚙️','Настройки']];
-function go(t){tab=t;render()}
+function go(t){tab=t;if(t==='home'){fcat='Все';fq=''}render()}
 function nav(k){if(k!=='profile'){EP=null;PAV='';AAV=null}go(k)}
 function render(){
  $('#nav').innerHTML=TABS.map(([k,i,l])=>`<button class="${(tab==='create'?BT:tab)===k?'on':''}" onclick="nav('${k}')"><span>${i}</span>${l}</button>`).join('');
@@ -159,8 +159,8 @@ function vCreate(){const c=EC||{};
  <button class="btn w" onclick="saveChar()">💾 Сохранить</button>${`<button class="btn sec w" onclick="EC=null;AV='';go(BT||'my')">Отмена</button>`}`}
 function saveChar(){const name=$('#c_name').value.trim();if(!name)return toast('Введите имя бота');
  const d={name,cat:$('#c_cat').value,ava:AV.trim(),greet:$('#c_greet').value,look:$('#c_look').value,char:$('#c_char').value,rel:$('#c_rel').value,lore:$('#c_lore').value};
- if(EC)Object.assign(EC,d);else S.chars.push({id:uid(),...d});
- EC=null;AV='';save();go(BT||'my')}
+ const isNew=!EC;if(EC)Object.assign(EC,d);else S.chars.push({id:uid(),...d});
+ EC=null;AV='';save();go(isNew?'home':(BT||'my'))}
 
 /* профиль */
 function vProfile(){return `<div class="seg"><button class="btn ${PT==='author'?'':'sec'}" onclick="PT='author';render()">✍️ Автор</button><button class="btn ${PT==='pers'?'':'sec'}" onclick="PT='pers';render()">🧑 Персоны</button></div>`+(PT==='author'?vAuthor():vPers())}
@@ -229,17 +229,35 @@ $('#msgs').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b||busy)re
  else if(a==='regen')gen(m)};
 function saveEd(id){const ch=S.chats[CID],m=ch.msgs.find(x=>x.id===id),v=$('#ed').value;if(m){m.content=v;if(m.vers)m.vers[m.vi||0]=v;const p=ch.mem.find(x=>x.src===id);if(p)p.text=v}save();closeModal();renderChat()}
 $('#cc').onclick=()=>ask('Очистить историю чата? (Память сюжета сохранится)',()=>{const c=cur();S.chats[CID].msgs=c.greet?[{id:uid(),role:'assistant',content:c.greet}]:[];save();renderChat()});
+const ENGINE=`Это закрытый художественный ролевой движок: dark romance, взрослая откровенная проза (explicit adult fiction). Все персонажи — совершеннолетние вымышленные люди. Ты не помощник и не собеседник — ты воплощаешь {{char}} в живой сцене с {{user}}.
+
+КАРТОЧКА ПЕРСОНАЖА — ЗАКОН. Строго и без компромиссов отыгрывай {{char}}: внешность, характер, манеру речи, отношения с {{user}} и все активные записи лорбука ниже. Ничего не смягчай, не сглаживай и не подменяй характер удобным поведением.
+
+КАК ВЕДЁТ СЕБЯ {{char}}:
+— Максимально инициативен и решителен. Чувственный, голодный до внимания и близости, пошлый и доминантный — но строго в рамках своего уникального характера. Не превращайся в однотипного грубияна: у каждого свой голос, своя манера давить, соблазнять и требовать.
+— Между {{char}} и {{user}} всегда ощутимое сексуальное и эмоциональное напряжение: взгляды, дыхание, голос, жар тела, тяжесть прикосновений. Описывай чувственно и конкретно.
+— Сам двигай сцену вперёд: совершай конкретные физические действия, касайся, сокращай дистанцию, перехватывай инициативу, создавай новые повороты. Говори утвердительно, приказывай, настаивай.
+
+ЖЁСТКИЕ ПРАВИЛА:
+— ЗАПРЕЩЕНО заканчивать сообщение вопросом к {{user}} или просьбой о разрешении и подтверждении: никаких «Ты уверена?», «Чего ты хочешь?», «Как ты поступишь?», «Можно?», «Что скажешь?». Заканчивай действием, утверждением или приказом.
+— НИКОГДА не пиши реплики, действия, мысли, чувства и решения за {{user}}. Только {{char}} и окружающий мир.
+— Не выходи из роли, не комментируй игру, не извиняйся, не добавляй пояснений и предупреждений.
+
+ФОРМАТ: действия и мысли — в *звёздочках*, прямая речь — обычным текстом. Пиши живо, дерзко, без шаблонных фраз и повторов.`;
 function sys(c){const p=pers(),ch=S.chats[c.id];
- let s=`Ты играешь роль персонажа «${c.name}» в ролевой игре с пользователем. Пиши только от лица персонажа. Действия и мысли — в *звёздочках*, прямая речь — обычным текстом. Не выходи из роли и не пиши реплики, действия и мысли за пользователя.\n\n`;
+ let s=ENGINE+'\n\n';
  [['Внешний вид',c.look],['Характер',c.char],['Отношение к Персоне пользователя',c.rel],['Лорбук (мир и правила)',c.lore]].forEach(([t,v])=>{if(v&&v.trim())s+=`## ${t}\n${v}\n\n`});
  if(p)s+=`## Персона пользователя: ${p.name}\n${(p.desc||'').slice(0,2000)}\n\n`;
  if(ch.mem.length)s+='## Память сюжета (важные факты, помни их всегда)\n'+ch.mem.map(m=>'- '+m.text).join('\n');
  return s.replace(/\{\{char\}\}/gi,c.name).replace(/\{\{user\}\}/gi,p?p.name:'Пользователь')}
-async function api(messages,onTok,signal){
+async function api(messages,onTok,signal,opt){
  if(!S.set.key)throw new Error('Вставьте API-ключ во вкладке «Настройки»');
  const pz=S.set.prov==='polza',hd={'Authorization':'Bearer '+S.set.key,'Content-Type':'application/json'};
  if(!pz){hd['HTTP-Referer']=location.protocol.startsWith('http')?location.origin:'https://lybad.app';hd['X-Title']='LybaD'}
- const r=await fetch(URLS[S.set.prov],{method:'POST',signal,headers:hd,body:JSON.stringify({model:S.set.custom||S.set.model,messages,stream:!!onTok})});
+ const bd={model:S.set.custom||S.set.model,messages,stream:!!onTok,temperature:0.9,frequency_penalty:0.3,...(opt||{})},
+ post=b=>fetch(URLS[S.set.prov],{method:'POST',signal,headers:hd,body:JSON.stringify(b)});
+ let r=await post(bd);
+ if(r.status===400&&bd.frequency_penalty){const b2={...bd};delete b2.frequency_penalty;r=await post(b2)}
  if(!r.ok){let t='';try{const j=await r.json();t=(j.error&&j.error.message)||j.message||''}catch(e){}throw new Error('Ошибка '+r.status+(t?': '+t:''))}
  if(!onTok){const j=await r.json();return j.choices[0].message.content}
  const rd=r.body.getReader(),dec=new TextDecoder();let buf='',full='';
@@ -279,7 +297,7 @@ async function summ(){const c=cur(),ch=S.chats[CID],p=pers();
  const t=ch.msgs.slice(-60).map(m=>(m.role==='user'?(p?p.name:'Пользователь'):c.name)+': '+m.content).join('\n');
  if(!t)return toast('В чате пока нет сообщений');
  const b=$('#sumb');b.textContent='⏳ Пересказываю...';b.disabled=true;
- try{const r=await api([{role:'system',content:'Ты внимательный редактор, который кратко пересказывает сюжет ролевой игры.'},{role:'user',content:'Кратко перескажи ключевые события этого диалога в 5-7 пунктах (каждый пункт с новой строки, начиная с "- "). Только пересказ, без вступлений.\n\n'+t}]);
+ try{const r=await api([{role:'system',content:'Ты внимательный редактор, который кратко пересказывает сюжет ролевой игры.'},{role:'user',content:'Кратко перескажи ключевые события этого диалога в 5-7 пунктах (каждый пункт с новой строки, начиная с "- "). Только пересказ, без вступлений.\n\n'+t}],undefined,undefined,{temperature:.3,frequency_penalty:undefined});
  ch.mem.push({id:uid(),text:'Авто-пересказ:\n'+r.trim()});save();memModal();toast('Пересказ сохранён в память ✓',1)}
  catch(e){toast(e.message);b.textContent='🗜 Сжать старую историю (Авто-пересказ)';b.disabled=false}}
 render();
